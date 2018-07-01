@@ -183,7 +183,7 @@
 
 #define DISK_IMAGE_NAME       "virt_hdd.dmg"
 
-#define ROM_SOFT_NAME         "../../softs/tsar_boot/preloader.elf"
+#define ROM_SOFT_NAME         "/home/nicolas/almos/tsar/softs/tsar_boot/preloader.elf"
 
 #define NORTH                 0
 #define SOUTH                 1
