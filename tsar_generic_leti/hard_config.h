@@ -1,0 +1,1 @@
+/home/nicolas/almos/almos-mkh/hard_config.h
