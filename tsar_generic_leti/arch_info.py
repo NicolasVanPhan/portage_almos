@@ -35,7 +35,7 @@ from arch_classes import *
 #  - nb_ttys        : number of TTY channels (from 1 to 8)
 #  - nb_nics        : number of NIC channels (from 1 to 2)
 #  - fbf_width      : frame_buffer width = frame_buffer heigth
-#  - ioc_type       : can be 'IOC_BDV','IOC_HBA','IOC_SDC','IOC_RDK' 
+#  - ioc_type       : can be 'IOC_BDV','IOC_HBA','IOC_SDC','IOC_RDK'
 #
 #  The others hardware parameters are defined below :
 #  - x_width        : number of bits for x coordinate
@@ -55,30 +55,32 @@ def arch( x_size    = 2,
           y_size    = 3,
           nb_cores  = 4,
           nb_ttys   = 3,
-          nb__nics  = 1,
+          nb_nics  = 1,
           fbf_width = 128,
           ioc_type  = 'IOC_BDV'):
 
     ### architecture constants
 
-    p_width         = 2 
-    x_width         = 4
-    y_width         = 4 
-    paddr_width     = 40 
-    irq_per_proc    = 4                                    # NetBSD constraint
-    io_cxy          = ((x_size-1)<<y_width) + (y_size-1)   # upper right cluster
-    boot_cxy        = 0
-    cache_line      = 64
-    devices_max     = 16  
-    reset_address   = 0x00000000                           # LETI constraint
+    p_width         = 2                                                          # [DEF] top.cpp l.687
+    x_width         = 4                                                          # [DEF] top.cpp l.684
+    y_width         = 4                                                          # [DEF] top.cpp l.685
+    paddr_width     = 40                                                         # [OK] top.cpp l.199
+    irq_per_proc    = 4                                    # NetBSD constraint   # [OK] top.cpp l.1246
+    io_cxy          = ((x_size-1)<<y_width) + (y_size-1)   # upper right cluster # [OK] top.cpp l.457
+    boot_cxy        = 0                                                          # [MOK] top.cpp l.38
+    cache_line      = 64                                                         # [MERR] cluster l.110
+    devices_max     = 16
+    reset_address   = 0x00000000                           # LETI constraint     # [DEF] top.cpp l.683
 
     ### constructors parameters checking
 
+    assert( (x_size == 1) or (x_size == 2) or (x_size == 4)
+             or (x_size == 8) or (x_size == 16) )
+
+    assert( (y_size == 1) or (y_size == 2) or (y_size == 4)
+             or (y_size == 8) or (y_size == 16) )
+
     assert( nb_cores <= 4 )
-
-    assert( x_size <= (1 << x_width) )
-
-    assert( (y_size > 1) and (y_size <= (1 << y_width)) )
 
     assert( (nb_ttys >= 1) and (nb_ttys <= 8) )
 
@@ -86,7 +88,24 @@ def arch( x_size    = 2,
 
     assert( ioc_type in ['IOC_BDV','IOC_HBA','IOC_SDC','IOC_SPI','IOC_RDK'] )
 
-    assert( ((boot_cxy >> y_width) < x_size) and ((boot_cxy & ((1<<y_width)-1)) < (y_size - 1) ) )
+    assert( (io_cxy == 0) or (io_cxy == ((x_size-1)<<y_width) + (y_size-1)) ) 
+
+    assert( ((boot_cxy >> y_width) < x_size) and ((boot_cxy & ((1<<y_width)-1)) < y_size) )
+
+    assert( (cache_line == 16) or (cache_line == 32) or (cache_line == 64)  )
+
+    # assert( nb_cores <= 4 )
+
+    # assert( x_size <= (1 << x_width) )
+
+    # assert( (y_size > 1) and (y_size <= (1 << y_width)) )
+
+    # assert( (nb_ttys >= 1) and (nb_ttys <= 8) )
+
+    # assert( (nb_nics >= 1) and (nb_nics <= 2) )
+
+    # assert( ioc_type in ['IOC_BDV','IOC_HBA','IOC_SDC','IOC_SPI','IOC_RDK'] ) 
+    # assert( ((boot_cxy >> y_width) < x_size) and ((boot_cxy & ((1<<y_width)-1)) < (y_size - 1) ) )
 
     ### define type and name 
 
@@ -114,10 +133,10 @@ def arch( x_size    = 2,
     fbf_size = fbf_width * fbf_width      # fbf_width * fbf_width bytes
 
     tty_base = 0x00F4000000
-    tty_size = 0x8000                     # 4 Kbytes * 8 channels
+    tty_size = 0x4000                     # (previously 0x8000) 4 Kbytes * 8 channels
 
     nic_base = 0x00F7000000
-    nic_size = 0x4000                     # 4 Kbytes * 4 channels
+    nic_size = 0x80000                     # (previously 0x4000)4 Kbytes * 4 channels
 
     pic_base = 0x00F9000000
     pic_size = 0x1000                     # 4 Kbytes
@@ -134,7 +153,7 @@ def arch( x_size    = 2,
                       paddr_width    = paddr_width,
                       x_width        = x_width,
                       y_width        = y_width,
-                      irqs_per_core  = irqs_per_core,
+                      irqs_per_core  = irq_per_proc,
                       io_cxy         = io_cxy,          
                       boot_cxy       = boot_cxy,
                       cache_line     = cache_line,
@@ -179,21 +198,25 @@ def arch( x_size    = 2,
                                                channels = nb_ttys )
 
                     archi.addIrq( dstdev  = xcu, 
-                                  port    = TODO 
+                                  port    = 10,      # arch.py l.226
                                   srcdev  = tty_bak,
                                   channel = 0,
                                   is_rx   = False )
 
-                    ioc_bak = archi.addDevice( ptype    = 'IOC_SPI',
-                                               base     = ioc_base + offset,
-                                               size     = ioc_size )
+                    # ioc_bak = archi.addDevice( ptype    = 'IOC_SPI',
+                    #                            base     = ioc_base + offset,
+                    #                            size     = ioc_size )
 
-                    archi.addIrq( dstdev  = xcu, 
-                                  port    = TODO 
-                                  srcdev  = ioc_bak )
+                    # archi.addIrq( dstdev  = xcu, 
+                    #               port    = TODO 
+                    #               srcdev  = ioc_bak )
 
+                # for p in xrange ( nb_cores ):
+                #     archi.addProc( x, y, p )
                 for p in xrange ( nb_cores ):
-                    archi.addProc( x, y, p )
+                    core = archi.addCore( (x<<(y_width+p_width)) + (y<<p_width) + p,  # hardware id
+                                          (x<<y_width) + y,                           # cluster 
+                                           p )                                        # local index            
 
             ###  peripherals in external cluster_io 
             if( cluster_xy == io_cxy ):
@@ -212,50 +235,116 @@ def arch( x_size    = 2,
                                        size     = nic_size, 
                                        channels = nb_nics )
 
-                fbf = archi.addDevice( ptype = 'FBF_SCL',
-                                       base  = fbf_base + offset,
-                                       size  = fbf_size, 
-                                       arg0 = fbf_width, arg1 = fbf_width )
+                fbf = archi.addDevice( ptype    = 'FBF_SCL',
+                                       base     = fbf_base + offset,
+                                       size     = fbf_size, 
+                                       arg0     = fbf_width,
+                                       arg1     = fbf_width )
 
-                pic = archi.addDevice( 'PIC', base = pic_base + offset, size = pic_size, 
-                                         ptype = 'PIC', channels = 32 )
+                pic = archi.addDevice( ptype    = 'PIC_TSR',
+                                       base     = pic_base + offset,
+                                       size     = pic_size, 
+                                       channels = 32,
+                                       arg0     = 32) # nb of input IRQs
 
-                archi.addIrq( dstdev = pic, port = 0, srcdev = nic, channel = 0 )
-# todo
-#                archi.addIrq( pic, index = 1, src = nic,
-#                                isrtype = 'ISR_NIC_RX', channel = 1 )
-#                archi.addIrq( pic, index = 2, src = nic,
-#                                isrtype = 'ISR_NIC_TX', channel = 0 )
-#                archi.addIrq( pic, index = 3, src = nic,
-#                                isrtype = 'ISR_NIC_TX', channel = 1 )
-#                archi.addIrq( pic, index = 4, src = cma,
-#                                isrtype = 'ISR_CMA', channel = 0 )
-#                archi.addIrq( pic, index = 5, src = cma,
-#                                isrtype = 'ISR_CMA', channel = 1 )
-#                archi.addIrq( pic, index = 6, src = cma,
-#                                isrtype = 'ISR_CMA', channel = 2 )
-#                archi.addIrq( pic, index = 7, src = cma,
-#                                isrtype = 'ISR_CMA', channel = 3 )
+                archi.addIrq( dstdev    = pic,
+                              port      = 0,
+                              srcdev    = nic,
+                              channel   = 0,
+                              is_rx     = True )
 
+                archi.addIrq( dstdev    = pic,
+                              port      = 1,
+                              srcdev    = nic,
+                              channel   = 1,
+                              is_rx     = True )
 
-                archi.addIrq( dstdev = pic, port = 8, srcdev = ioc )
+                archi.addIrq( dstdev    = pic,
+                              port      = 2,
+                              srcdev    = nic,
+                              channel   = 0,
+                              is_rx     = False )
 
-#                archi.addIrq( pic, index = 16, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 0 )
-#                archi.addIrq( pic, index = 17, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 1 )
-#                archi.addIrq( pic, index = 18, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 2 )
-#                archi.addIrq( pic, index = 19, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 3 )
-#                archi.addIrq( pic, index = 20, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 4 )
-#                archi.addIrq( pic, index = 21, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 5 )
-#                archi.addIrq( pic, index = 22, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 6 )
-#                archi.addIrq( pic, index = 23, src = tty,
-#                                isrtype = 'ISR_TTY_RX', channel = 7 )
+                archi.addIrq( dstdev    = pic,
+                              port      = 3,
+                              srcdev    = nic,
+                              channel   = 1,
+                              is_rx     = False )
+
+# CMA is not used anymore but IRQ still defined in LETI top.cpp:945
+# However they are not defined in arch_info.py of tsar generic IOB
+
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 4,
+                #               srcdev    = cma,
+                #               channel   = 0 )
+
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 5,
+                #               srcdev    = cma,
+                #               channel   = 1 )
+
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 6,
+                #               srcdev    = cma,
+                #               channel   = 2 )
+
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 7,
+                #               srcdev    = cma,
+                #               channel   = 3 )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 8,
+                              srcdev    = ioc )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 16,
+                              srcdev    = tty,
+                              channel   = 0,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 17,
+                              srcdev    = tty,
+                              channel   = 1,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 18,
+                              srcdev    = tty,
+                              channel   = 2,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 19,
+                              srcdev    = tty,
+                              channel   = 3,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 20,
+                              srcdev    = tty,
+                              channel   = 4,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 21,
+                              srcdev    = tty,
+                              channel   = 5,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 22,
+                              srcdev    = tty,
+                              channel   = 6,
+                              is_rx     = True )
+
+                archi.addIrq( dstdev    = pic,
+                              port      = 23,
+                              srcdev    = tty,
+                              channel   = 7,
+                              is_rx     = True )
 
     return archi
 
