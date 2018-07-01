@@ -16,19 +16,22 @@
 // and the number of processors per cluster (NB_PROCS_MAX).
 // The NB_PROCS_MAX parameter cannot be larger than 4.
 // Others parameters are the frame buffer size, the disk controller type
-// the number of TTY channels, the number of NIC channels.
+// (BDV or HBA), the number of TTY channels, the number of NIC channels,
+// and the number of CMA channels. 
 //
 // All external peripherals are located in cluster[X_SIZE-1][Y_SIZE-1],
 // and are connected to an IO bus (implemented as a vci_local_crossbar):
-// - DISK : block device controller 
+// - DISK : block device controller (BDV / HBA)
 // - MNIC : multi-channel ethernet controller
+// - CDMA : multi-channel chained buffer dma controller
 // - MTTY : multi-channel tty controller
 // - FBUF : frame buffer controller
 // - IOPI : HWI to SWI translator 
 //
 // This IO bus is directly connected to the north ports of the CMD/RSP
-// routers in cluster[X_SIZE-1][Y_SIZE-1] through VCI/DSPIN wrappers.
-// All other clusters in the upper row are empty: no processors, no ram. 
+// routers in cluster[X_SIZE-1][y_SIZE-2] through VCI/DSPIN wrappers.
+// All other clusters in the upper row are empty: no processors,
+// no ram, no routers. 
 // The X_SIZE parameter must be larger than 0, but no larger than 16.
 // The Y_SIZE parameter must be larger than 1, but no larger than 16.
 //
@@ -136,6 +139,29 @@
 ///////////////////////////////////////////////////
 
 #include "hard_config.h"
+
+///////////////////////////////////////////////////////////////////////////////////////
+// EDIT : Nicolas Phan / June 2018
+///////////////////////////////////////////////////////////////////////////////////////
+
+// Some macros here differ from those in hard_config.h,
+// the following lines adjust that
+#define XCU_NB_HWI      ICU_NB_HWI
+#define XCU_NB_PTI      ICU_NB_PTI
+#define XCU_NB_WTI      ICU_NB_WTI
+#define XCU_NB_OUT      ICU_NB_OUT
+
+#define SEG_XCU_BASE    SEG_ICU_BASE
+#define SEG_XCU_SIZE    SEG_ICU_SIZE
+
+#define SEG_TTY_BASE    SEG_TXT_BASE
+#define SEG_TTY_SIZE    SEG_TXT_SIZE
+
+#define NB_TTY_CHANNELS NB_TXT_CHANNELS
+
+#define NB_CMA_CHANNELS 0
+#define SEG_CMA_BASE    0xF8000000
+#define SEG_CMA_SIZE    0x0
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //    Secondary Hardware Parameters
@@ -912,8 +938,8 @@ int _main(int argc, char *argv[])
     {
         cdma->p_irq[i]                 (signal_irq_cdma[i]);
     }
-
     std::cout << "  - CDMA connected" << std::endl;
+
 
     // multi_tty
     mtty->p_clk                        (signal_clk);
