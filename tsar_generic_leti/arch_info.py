@@ -184,7 +184,7 @@ def arch( x_size    = 2,
                                        base     = xcu_base + offset, 
                                        size     = xcu_size, 
                                        channels = nb_cores * irq_per_proc, 
-                                       arg0 = 16, arg1 = 16, arg2 = 16 )
+                                       arg0 = 16, arg1 = 16, arg2 = 16, arg3 = nb_cores * irq_per_proc )
 
                 archi.addIrq( dstdev = xcu,
                               port   = 8, 
