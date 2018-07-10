@@ -124,7 +124,8 @@
 #include "vci_local_crossbar.h"
 #include "vci_dspin_initiator_wrapper.h"
 #include "vci_dspin_target_wrapper.h"
-#include "vci_multi_tty.h"
+//#include "vci_multi_tty.h"
+#include "vci_tty_tsar.h"
 #include "vci_multi_nic.h"
 #include "vci_chbuf_dma.h"
 #include "vci_block_device_tsar.h"
@@ -542,6 +543,7 @@ int _main(int argc, char *argv[])
     sc_signal<bool>                   signal_irq_mnic_rx[NB_NIC_CHANNELS];
     sc_signal<bool>                   signal_irq_mnic_tx[NB_NIC_CHANNELS];
     sc_signal<bool>                   signal_irq_mtty_rx[NB_TTY_CHANNELS];
+    sc_signal<bool>                   signal_irq_mtty_tx[NB_TTY_CHANNELS];
     sc_signal<bool>                   signal_irq_cdma[NB_CMA_CHANNELS];
     sc_signal<bool>                   signal_irq_false;
 
@@ -838,8 +840,8 @@ int _main(int argc, char *argv[])
         vect_names.push_back(term_name.str().c_str());
     }
 
-    VciMultiTty<vci_param_int>*
-    mtty = new VciMultiTty<vci_param_int>(
+    VciTtyTsar<vci_param_int>*
+    mtty = new VciTtyTsar<vci_param_int>(
                 "mtty",
                 IntTab(cluster_io, MTTY_TGTID),
                 maptabd,
@@ -947,7 +949,8 @@ int _main(int argc, char *argv[])
     mtty->p_vci                        (signal_vci_tgt_mtty);
     for ( size_t i=0 ; i<NB_TTY_CHANNELS ; i++ )
     {
-        mtty->p_irq[i]              	(signal_irq_mtty_rx[i]);
+        mtty->p_irq_rx[i]              (signal_irq_mtty_rx[i]);
+        mtty->p_irq_tx[i]              (signal_irq_mtty_tx[i]);
     }
 
     std::cout << "  - MTTY connected" << std::endl;
@@ -971,6 +974,8 @@ int _main(int argc, char *argv[])
        else if(i == 8)                 iopic->p_hwi[i] (signal_irq_disk);
        else if(i < 16)                 iopic->p_hwi[i] (signal_irq_false);
        else if(i < 16+NB_TTY_CHANNELS) iopic->p_hwi[i] (signal_irq_mtty_rx[i-16]);
+       else if(i < 24)                 iopic->p_hwi[i] (signal_irq_false);
+       else if(i < 24+NB_TXT_CHANNELS) iopic->p_hwi[i] (signal_irq_mtty_tx[i-24]);
        else                            iopic->p_hwi[i] (signal_irq_false);
     }
 

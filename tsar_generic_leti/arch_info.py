@@ -191,17 +191,17 @@ def arch( x_size    = 2,
                               srcdev = mmc )
 
                 ### TTY and IOC backup
-                if ( x==0 ) and ( y==0 ):
-                    tty_bak = archi.addDevice( ptype    = 'TXT_TTY',
-                                               base     = tty_base + offset,
-                                               size     = tty_size, 
-                                               channels = nb_ttys )
+                # if ( x==0 ) and ( y==0 ):
+                    # tty_bak = archi.addDevice( ptype    = 'TXT_TTY',
+                    #                            base     = tty_base + offset,
+                    #                            size     = tty_size, 
+                    #                            channels = nb_ttys )
 
-                    archi.addIrq( dstdev  = xcu, 
-                                  port    = 10,      # arch.py l.226
-                                  srcdev  = tty_bak,
-                                  channel = 0,
-                                  is_rx   = False )
+                    # archi.addIrq( dstdev  = xcu, 
+                    #               port    = 10,      # arch.py l.226
+                    #               srcdev  = tty_bak,
+                    #               channel = 0,
+                    #               is_rx   = True )
 
                     # ioc_bak = archi.addDevice( ptype    = 'IOC_SPI',
                     #                            base     = ioc_base + offset,
@@ -294,57 +294,25 @@ def arch( x_size    = 2,
                 #               srcdev    = cma,
                 #               channel   = 3 )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 8,
-                              srcdev    = ioc )
+                archi.addIrq( dstdev = pic, port = 8, srcdev = ioc )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 16,
-                              srcdev    = tty,
-                              channel   = 0,
-                              is_rx     = True )
+                archi.addIrq( dstdev = pic, port = 16, srcdev = tty, channel = 0, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 17, srcdev = tty, channel = 1, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 18, srcdev = tty, channel = 2, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 19, srcdev = tty, channel = 3, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 20, srcdev = tty, channel = 4, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 21, srcdev = tty, channel = 5, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 22, srcdev = tty, channel = 6, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 23, srcdev = tty, channel = 7, is_rx = True )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 17,
-                              srcdev    = tty,
-                              channel   = 1,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 18,
-                              srcdev    = tty,
-                              channel   = 2,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 19,
-                              srcdev    = tty,
-                              channel   = 3,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 20,
-                              srcdev    = tty,
-                              channel   = 4,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 21,
-                              srcdev    = tty,
-                              channel   = 5,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 22,
-                              srcdev    = tty,
-                              channel   = 6,
-                              is_rx     = True )
-
-                archi.addIrq( dstdev    = pic,
-                              port      = 23,
-                              srcdev    = tty,
-                              channel   = 7,
-                              is_rx     = True )
+                archi.addIrq( dstdev = pic, port = 24, srcdev = tty, channel = 0, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 25, srcdev = tty, channel = 1, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 26, srcdev = tty, channel = 2, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 27, srcdev = tty, channel = 3, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 28, srcdev = tty, channel = 4, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 29, srcdev = tty, channel = 5, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 30, srcdev = tty, channel = 6, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 31, srcdev = tty, channel = 7, is_rx = False )
 
     return archi
 
