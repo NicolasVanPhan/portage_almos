@@ -44,7 +44,7 @@ todo = Platform('caba', 'top.cpp',
             Uses('caba:vci_framebuffer',
                   cell_size = vci_cell_size_int),
 
-            Uses('caba:vci_multi_nic',
+            Uses('caba:vci_master_nic',
                   cell_size = vci_cell_size_int),
 
             Uses('caba:vci_chbuf_dma',

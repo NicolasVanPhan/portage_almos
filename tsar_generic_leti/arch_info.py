@@ -247,29 +247,28 @@ def arch( x_size    = 2,
                                        channels = 32,
                                        arg0     = 32) # nb of input IRQs
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 0,
-                              srcdev    = nic,
-                              channel   = 0,
-                              is_rx     = True )
+                archi.addIrq( dstdev = pic, port = 0, srcdev = nic, channel = 0, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 1, srcdev = nic, channel = 1, is_rx = True )
+                archi.addIrq( dstdev = pic, port = 2, srcdev = nic, channel = 0, is_rx = False )
+                archi.addIrq( dstdev = pic, port = 3, srcdev = nic, channel = 1, is_rx = False )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 1,
-                              srcdev    = nic,
-                              channel   = 1,
-                              is_rx     = True )
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 1,
+                #               srcdev    = nic,
+                #               channel   = 1,
+                #               is_rx     = True )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 2,
-                              srcdev    = nic,
-                              channel   = 0,
-                              is_rx     = False )
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 2,
+                #               srcdev    = nic,
+                #               channel   = 0,
+                #               is_rx     = False )
 
-                archi.addIrq( dstdev    = pic,
-                              port      = 3,
-                              srcdev    = nic,
-                              channel   = 1,
-                              is_rx     = False )
+                # archi.addIrq( dstdev    = pic,
+                #               port      = 3,
+                #               srcdev    = nic,
+                #               channel   = 1,
+                #               is_rx     = False )
 
 # CMA is not used anymore but IRQ still defined in LETI top.cpp:945
 # However they are not defined in arch_info.py of tsar generic IOB

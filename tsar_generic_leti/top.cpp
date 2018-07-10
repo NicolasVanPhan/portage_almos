@@ -126,7 +126,7 @@
 #include "vci_dspin_target_wrapper.h"
 //#include "vci_multi_tty.h"
 #include "vci_tty_tsar.h"
-#include "vci_multi_nic.h"
+#include "vci_master_nic.h"
 #include "vci_chbuf_dma.h"
 #include "vci_block_device_tsar.h"
 #include "vci_multi_ahci.h"
@@ -255,6 +255,8 @@
 #define DISK_SRCID            NB_PROCS_MAX
 #define CDMA_SRCID            NB_PROCS_MAX + 1
 #define IOPI_SRCID            NB_PROCS_MAX + 2
+#define MNIC_RX_SRCID         NB_PROCS_MAX + 3
+#define MNIC_TX_SRCID         NB_PROCS_MAX + 4
 
 bool stop_called = false;
 
@@ -629,6 +631,7 @@ int _main(int argc, char *argv[])
    VciSignals<vci_param_int>    signal_vci_ini_disk("signal_vci_ini_disk");
    VciSignals<vci_param_int>    signal_vci_ini_cdma("signal_vci_ini_cdma");
    VciSignals<vci_param_int>    signal_vci_ini_iopi("signal_vci_ini_iopi");
+   VciSignals<vci_param_int>    signal_vci_ini_mnic("signal_vci_ini_mnic");
 
    VciSignals<vci_param_int>*   signal_vci_ini_proc =
        alloc_elems<VciSignals<vci_param_int> >("signal_vci_ini_proc", NB_PROCS_MAX );
@@ -747,7 +750,7 @@ int _main(int argc, char *argv[])
     // - 6 local targets    : FBF, TTY, CMA, NIC, PIC, IOC
     // - 3 local initiators : IOC, CMA, PIC
     // There is no PROC, no MEMC and no XICU in this cluster,
-    // but the crossbar has (NB_PROCS_MAX + 3) intiators and
+    // but the crossbar has (NB_PROCS_MAX + 4) intiators and
     // 8 targets, in order to use the same SRCID and TGTID space
     // (same mapping table for the internal components,
     //  and for the external peripherals)
@@ -765,7 +768,7 @@ int _main(int argc, char *argv[])
                 "iobus",
                 maptabd,                      // mapping table
                 cluster_io,                   // cluster_xy
-                NB_PROCS_MAX + 3,             // number of local initiators
+                NB_PROCS_MAX + 4,             // number of local initiators
                 8,                            // number of local targets
                 DISK_TGTID );                 // default target index
 
@@ -809,16 +812,18 @@ int _main(int argc, char *argv[])
 #endif
 
     //////////// vci_multi_nic
-    VciMultiNic<vci_param_int>*
-    mnic = new VciMultiNic<vci_param_int>(
-             "mnic",
-                IntTab(cluster_io, MNIC_TGTID),
-                maptabd,
-                NB_NIC_CHANNELS,
-                0,                // default MAC_4 address
-                0,                // default MAC_2 address
-                1,                // NIC_MODE_SYNTHESIS
-                12 );             // INTER_FRAME_GAP
+    VciMasterNic<vci_param_int>*  mnic;
+    mnic = new VciMasterNic<vci_param_int>( "mnic",
+                                            maptabd,
+                                            IntTab(cluster_io, MNIC_RX_SRCID), 
+                                            IntTab(cluster_io, MNIC_TX_SRCID), 
+                                            IntTab(cluster_io, MNIC_TGTID),
+                                            NB_NIC_CHANNELS,
+                                            64,               // burst length
+                                            0,       // default MAC address (LSB)
+                                            0,       // default MAC address (MSB)
+                                            1,                // NIC_MODE_SYNTHESIS
+                                            12);              // INTER_FRAME_GAP
 
     ///////////// vci_chbuf_dma
     VciChbufDma<vci_param_int>*
@@ -894,6 +899,7 @@ int _main(int argc, char *argv[])
     iobus->p_to_initiator[DISK_SRCID]  (signal_vci_ini_disk);
     iobus->p_to_initiator[CDMA_SRCID]  (signal_vci_ini_cdma);
     iobus->p_to_initiator[IOPI_SRCID]  (signal_vci_ini_iopi);
+    iobus->p_to_initiator[MNIC_RX_SRCID]  (signal_vci_ini_mnic);
 
     std::cout << "  - IOBUS connected" << std::endl;
 
@@ -922,7 +928,8 @@ int _main(int argc, char *argv[])
     // multi_nic
     mnic->p_clk                        (signal_clk);
     mnic->p_resetn                     (signal_resetn);
-    mnic->p_vci                        (signal_vci_tgt_mnic);
+    mnic->p_vci_tgt                    (signal_vci_tgt_mnic);
+    mnic->p_vci_ini                    (signal_vci_ini_mnic);
     for ( size_t i=0 ; i<NB_NIC_CHANNELS ; i++ )
     {
          mnic->p_rx_irq[i]             (signal_irq_mnic_rx[i]);
