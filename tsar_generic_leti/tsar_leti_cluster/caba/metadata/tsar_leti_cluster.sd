@@ -57,7 +57,7 @@ Module('caba:tsar_leti_cluster',
       Uses('caba:dspin_router', 
               flit_width      = parameter.Reference('dspin_rsp_width')),
 
-      Uses('caba:vci_multi_tty',
+      Uses('caba:vci_tty_tsar',
               cell_size       = parameter.Reference('vci_data_width_int')),
 
       Uses('caba:vci_block_device_tsar',

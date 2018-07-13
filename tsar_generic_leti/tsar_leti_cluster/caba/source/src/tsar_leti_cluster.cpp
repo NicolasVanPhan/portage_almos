@@ -310,11 +310,18 @@ template<size_t dspin_cmd_width,
         }
 
         /////////////////////////////////////////////
-        mtty = new VciMultiTty<vci_param_int>(
-                     "mtty",
-                     IntTab(cluster_xy, tgtid_mtty),
-                     mtd,
-                     "tty_backup", NULL );
+        // mtty = new VciMultiTty<vci_param_int>(
+        //              "mtty",
+        //              IntTab(cluster_xy, tgtid_mtty),
+        //              mtd,
+        //              "tty_backup", NULL );
+        
+        // VciTtyTsar<vci_param_int>*
+        mtty = new VciTtyTsar<vci_param_int>(
+                    "mtty",
+                    IntTab(cluster_xy, tgtid_mtty),
+                    mtd,
+                    "tty_backup" );
     }
 
     std::cout << std::endl;
@@ -476,7 +483,8 @@ template<size_t dspin_cmd_width,
         {
             if      (i == 8)                     xicu->p_hwi[i] (signal_irq_memc);
             else if (i == 9 and not use_ramdisk) xicu->p_hwi[i] (signal_irq_bdev);
-            else if (i == 10)                    xicu->p_hwi[i] (signal_irq_mtty);
+            else if (i == 10)                    xicu->p_hwi[i] (signal_irq_mtty_rx);
+            else if (i == 11)                    xicu->p_hwi[i] (signal_irq_mtty_tx);
             else                                 xicu->p_hwi[i] (signal_false);
         }
         else                             // other clusters
@@ -527,7 +535,8 @@ template<size_t dspin_cmd_width,
         mtty->p_clk                    (this->p_clk);
         mtty->p_resetn                 (this->p_resetn);
         mtty->p_vci                    (signal_vci_tgt_mtty);
-        mtty->p_irq[0]                 (signal_irq_mtty);
+        mtty->p_irq_rx[0]              (signal_irq_mtty_rx);
+        mtty->p_irq_tx[0]              (signal_irq_mtty_tx);
 
         std::cout << "  - MTTY connected" << std::endl;
     }

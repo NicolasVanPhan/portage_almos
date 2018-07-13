@@ -26,7 +26,8 @@
 #include "vci_dspin_initiator_wrapper.h"
 #include "vci_dspin_target_wrapper.h"
 #include "dspin_router.h"
-#include "vci_multi_tty.h"
+// #include "vci_multi_tty.h"
+#include "vci_tty_tsar.h"
 #include "vci_block_device_tsar.h"
 #include "vci_mem_cache.h"
 #include "vci_cc_vcache_wrapper.h"
@@ -68,7 +69,8 @@ template<size_t dspin_cmd_width,
     // interrupt signals
     sc_signal<bool>         signal_false;
     sc_signal<bool>         signal_proc_irq[16];
-    sc_signal<bool>         signal_irq_mtty;
+    sc_signal<bool>         signal_irq_mtty_rx;
+    sc_signal<bool>         signal_irq_mtty_tx;
     sc_signal<bool>         signal_irq_memc;
     sc_signal<bool>         signal_irq_bdev;
 
@@ -130,7 +132,7 @@ template<size_t dspin_cmd_width,
 
     VciSimpleRam<vci_param_ext>*                  xram;
 
-    VciMultiTty<vci_param_int>*                   mtty;
+    VciTtyTsar<vci_param_int>*                    mtty;
 
     VciBlockDeviceTsar<vci_param_int>*            bdev;
 

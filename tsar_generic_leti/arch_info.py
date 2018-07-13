@@ -190,25 +190,31 @@ def arch( x_size    = 2,
                               port   = 8, 
                               srcdev = mmc )
 
-                ### TTY and IOC backup
+                ### TTY and IOC backup (c.f. tsar_leti_cluster.cpp for port numbers and co.)
                 # if ( x==0 ) and ( y==0 ):
-                    # tty_bak = archi.addDevice( ptype    = 'TXT_TTY',
-                    #                            base     = tty_base + offset,
-                    #                            size     = tty_size, 
-                    #                            channels = nb_ttys )
+                #     tty_bak = archi.addDevice( ptype    = 'TXT_TTY',
+                #                                base     = tty_base + offset,
+                #                                size     = tty_size, 
+                #                                channels = 1 )
 
-                    # archi.addIrq( dstdev  = xcu, 
-                    #               port    = 10,      # arch.py l.226
-                    #               srcdev  = tty_bak,
-                    #               channel = 0,
-                    #               is_rx   = True )
+                #     archi.addIrq( dstdev  = xcu, 
+                #                   port    = 10,
+                #                   srcdev  = tty_bak,
+                #                   channel = 0,
+                #                   is_rx   = True )
+                    
+                #     archi.addIrq( dstdev  = xcu, 
+                #                   port    = 11,
+                #                   srcdev  = tty_bak,
+                #                   channel = 0,
+                #                   is_rx   = False )
 
                     # ioc_bak = archi.addDevice( ptype    = 'IOC_SPI',
                     #                            base     = ioc_base + offset,
                     #                            size     = ioc_size )
 
                     # archi.addIrq( dstdev  = xcu, 
-                    #               port    = TODO 
+                    #               port    = 9, 
                     #               srcdev  = ioc_bak )
 
                 # for p in xrange ( nb_cores ):
