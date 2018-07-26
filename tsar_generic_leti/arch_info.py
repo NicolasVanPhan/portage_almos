@@ -177,15 +177,15 @@ def arch( x_size    = 2,
                                        base  = ram_base + offset, 
                                        size  = ram_size )
 
-                mmc = archi.addDevice( ptype = 'MMC_TSR',
-                                       base  = mmc_base + offset, 
-                                       size  = mmc_size )
-
                 xcu = archi.addDevice( ptype    = 'ICU_XCU',
                                        base     = xcu_base + offset, 
                                        size     = xcu_size, 
                                        channels = nb_cores * irq_per_proc, 
                                        arg0 = 16, arg1 = 16, arg2 = 16, arg3 = nb_cores * irq_per_proc )
+
+                mmc = archi.addDevice( ptype = 'MMC_TSR',
+                                       base  = mmc_base + offset, 
+                                       size  = mmc_size )
 
                 archi.addIrq( dstdev = xcu,
                               port   = 8, 
