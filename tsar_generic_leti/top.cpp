@@ -660,7 +660,7 @@ int _main(int argc, char *argv[])
    soclib::common::Loader loader( soft_name );
 #endif
 
-   loader.memory_default(0x55);
+   loader.memory_default(0x42);
 
    typedef soclib::common::GdbServer<soclib::common::Mips32ElIss> proc_iss;
    proc_iss::set_loader( loader );
