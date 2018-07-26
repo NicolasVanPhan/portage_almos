@@ -77,8 +77,9 @@ def arch( x_size    = 2,
     assert( (x_size == 1) or (x_size == 2) or (x_size == 4)
              or (x_size == 8) or (x_size == 16) )
 
-    assert( (y_size == 1) or (y_size == 2) or (y_size == 4)
-             or (y_size == 8) or (y_size == 16) )
+    # The actual LETI architecture has y_size = 3, so this assert is irrelevant
+    #assert( (y_size == 1) or (y_size == 2) or (y_size == 4)
+             #or (y_size == 8) or (y_size == 16) )
 
     assert( nb_cores <= 4 )
 
